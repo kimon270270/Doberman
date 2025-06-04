@@ -13,7 +13,7 @@ POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
 POSTGRES_USER = os.getenv('POSTGRES_USER')
 
 sender_email = os.getenv("SENDER_EMAIL")
-receiver_email = os.getenv("RECIEVER_EMAIL")
+receiver_email = os.getenv("RECEIVER_EMAIL")
 sender_key = os.getenv("SENDER_KEY")
 
 
@@ -30,9 +30,8 @@ def get_count():
                 
                 curr.execute(count_script)
                 
-                result = curr.fetchone
-                count = result[0]
-                
+                result = curr.fetchone()
+                count = result[0]               
         
     except Exception as e:
         print(f"GET_COUNT\t{e}")
@@ -54,9 +53,10 @@ def current_hash(file_path):
         
     return (h.hexdigest())
 
+
 def check_hash(count):
     try:
-        for i in range(count):
+        for i in range(1, count+1):
             with psycopg2.connect(port=DATABASE_PORT, database=POSTGRES_DB, user=POSTGRES_USER,password=POSTGRES_PASSWORD) as conn:
                 with conn.cursor() as curr:
                     
@@ -65,27 +65,24 @@ def check_hash(count):
                     FROM hash_table
                     WHERE id = %s;
                     """
-                    
                     curr.execute(select_script, (i,))
-                    
-                    result = curr.fetchone
+                    result = curr.fetchone()
                     file_path = result[0]
                     database_hash = result[1]
-                    
                     curr_hash = current_hash(file_path)
                     
                     if not (database_hash == curr_hash):
                         text = f"Subject: File Modification/Alteration Alert\n\nContents of {file_path} has been modified/altered."
                         server = smtplib.SMTP("smtp.gmail.com", 587)
-                        server.starttls
-                        
+                        server.starttls()
                         server.login(sender_email, sender_key)
                         server.sendmail(sender_email, receiver_email, text)
+                        server.quit()
                         
-                        print(f"Email Sent.")
+                        print(f"Email Sent For Modification/Alteration of {file_path}.\n\n")
                         
                     else:
-                        print(f"No Alteration/Modification For {file_path}.\n")
+                        print(f"No Alteration/Modification For {file_path}.\n\n")
                         
                         
                 
