@@ -42,12 +42,17 @@ def get_count():
 def current_hash(file_path):
     
     try:
-        with open (file_path, "rb") as f:
-            file_content = f.read()
-            
-            h = hashlib.sha256()
-            h.update(file_content)
-    
+        if (os.path.exists(file_path)):
+            with open (file_path, "rb") as f:
+                file_content = f.read()
+                
+                
+                h = hashlib.sha256()
+                h.update(file_content)
+                
+        else:
+            return("FileDeleted")
+        
     except Exception as e:
         print(f"CURRENT_HASH\t{e}")
         
@@ -71,8 +76,19 @@ def check_hash(count):
                     database_hash = result[1]
                     curr_hash = current_hash(file_path)
                     
-                    if not (database_hash == curr_hash):
-                        text = f"Subject: File Modification/Alteration Alert\n\nContents of {file_path} has been modified/altered."
+                    if (curr_hash == "FileDeleted"):
+                        text = f"Subject: File Deletion Alert\n\nContents of {file_path} has been deleted."
+                        server = smtplib.SMTP("smtp.gmail.com", 587)
+                        server.starttls()
+                        server.login(sender_email, sender_key)
+                        server.sendmail(sender_email, receiver_email, text)
+                        server.quit()
+                        
+                        print(f"Email Sent For Deletion of {file_path}.\n\n")
+                        
+                    
+                    elif not (database_hash == curr_hash):
+                        text = f"Subject: File Modification/Alteration Alert\n\n{file_path} has been modified/altered."
                         server = smtplib.SMTP("smtp.gmail.com", 587)
                         server.starttls()
                         server.login(sender_email, sender_key)
