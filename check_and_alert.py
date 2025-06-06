@@ -77,7 +77,7 @@ def check_hash(count):
                     curr_hash = current_hash(file_path)
                     
                     if (curr_hash == "FileDeleted"):
-                        text = f"Subject: File Deletion Alert\n\nContents of {file_path} has been deleted."
+                        text = f"Subject: File Deletion Alert\n\n{file_path} has been deleted."
                         server = smtplib.SMTP("smtp.gmail.com", 587)
                         server.starttls()
                         server.login(sender_email, sender_key)
