@@ -7,7 +7,8 @@ def get_files(directory):
     files = os.listdir(directory)
     
     for f in files:
-        files_list.append(os.path.join(directory,f))
+        if (os.path.isfile(f)):
+            files_list.append(os.path.join(directory,f))
     
     return files_list
 
