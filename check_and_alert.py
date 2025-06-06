@@ -17,26 +17,30 @@ receiver_email = os.getenv("RECEIVER_EMAIL")
 sender_key = os.getenv("SENDER_KEY")
 
 
-def get_count():
+def get_id():
+    
+    id_list = []
     
     try:
         with psycopg2.connect(port=DATABASE_PORT, database=POSTGRES_DB, user=POSTGRES_USER,password=POSTGRES_PASSWORD) as conn:
             with conn.cursor() as curr:
                 
                 count_script = """
-                SELECT COUNT(id) 
+                SELECT id 
                 FROM hash_table;
                 """
                 
                 curr.execute(count_script)
                 
-                result = curr.fetchone()
-                count = result[0]               
+                result = curr.fetchall()
+                
+                for pk_id in result:
+                    id_list.append(pk_id[0])             
         
     except Exception as e:
         print(f"GET_COUNT\t{e}")
 
-    return count
+    return id_list
 
 
 def current_hash(file_path):
@@ -59,9 +63,9 @@ def current_hash(file_path):
     return (h.hexdigest())
 
 
-def check_hash(count):
+def check_hash(id_list):
     try:
-        for i in range(1, count+1):
+        for i in id_list:
             with psycopg2.connect(port=DATABASE_PORT, database=POSTGRES_DB, user=POSTGRES_USER,password=POSTGRES_PASSWORD) as conn:
                 with conn.cursor() as curr:
                     
@@ -107,5 +111,5 @@ def check_hash(count):
         print(f"CHECK_HASH\t{e}")
     
 if __name__ == "__main__":
-    count = get_count()
-    check_hash(count)
+    id_list = get_id()
+    check_hash(id_list)
